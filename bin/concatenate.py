@@ -53,28 +53,76 @@ def find_file_pairs(directory):
     return (raw_mdata_file, processed_mdata_file)
 
 
-def annotate_h5ads(
-    adata_file, tissue_type: str, uuids_df: pd.DataFrame):
-    # Get the directory
-    data_set_dir = fspath(adata_file.parent.stem)
-    # And the tissue type
+def make_unique_barcodes(mdata_file, tissue_type: str = None):
+    data_set_dir = fspath(mdata_file.parent.stem)
     tissue_type = tissue_type if tissue_type else get_tissue_type(data_set_dir)
-    dense_adata = anndata.read_h5ad(adata_file)
-    adata = make_new_anndata_object(dense_adata)
-    del dense_adata
-    adata_copy = adata.copy()
-    adata_copy.obs["barcode"] = adata.obs.index
-    adata_copy.obs["barcode"] = adata_copy.obs["barcode"].str.replace("BAM_data#", "", regex=False)
-    adata_copy.obs["dataset"] = data_set_dir
+    
+    # Load MuData object
+    mdata = mu.read_h5mu(mdata_file)
+    mdata_copy = mdata.copy()
+
+    # Make index unique to this dataset
+    mdata_copy.obs["barcode"] = mdata.obs.index
+    mdata_copy.obs["barcode"] = mdata_copy.obs["barcode"].str.replace("BAM_data#", "", regex=False)
+    mdata_copy.obs["dataset"] = data_set_dir
     
     cell_ids_list = [
-        "-".join([data_set_dir, barcode]) for barcode in adata_copy.obs["barcode"]
+        "-".join([data_set_dir, barcode]) for barcode in mdata_copy.obs["barcode"]
     ]
-    adata_copy.obs["cell_id"] = pd.Series(
-        cell_ids_list, index=adata_copy.obs.index, dtype=str
+    mdata_copy.obs["cell_id"] = pd.Series(
+        cell_ids_list, index=mdata_copy.obs.index, dtype=str
     )
-    adata_copy.obs.set_index("cell_id", drop=True, inplace=True)
-    return adata_copy
+
+    # Iterate through each modality in mdata, accessing by key
+    print(list(mdata_copy.mod.keys()))
+    for key in mdata_copy.mod.keys():
+        mod_data = mdata_copy[key]
+        print(key)
+        print(mod_data.obs_keys())
+
+        mod_data.obs["barcode"] = mod_data.obs.index
+        if mod_data.obs["barcode"].str.contains("BAM_data#").any():
+            mod_data.obs["barcode"] = mod_data.obs["barcode"].str.replace("BAM_data#", "", regex=False)
+
+        cell_ids_list = [
+            f"{data_set_dir}-{barcode}" for barcode in mod_data.obs["barcode"]
+        ]
+        mod_data.obs["cell_id"] = pd.Series(cell_ids_list, index=mod_data.obs.index, dtype=str)
+        mod_data.obs.set_index("cell_id", drop=True, inplace=True)
+
+        print(mod_data.obs)
+        mdata_copy.mod[key] = mod_data
+    
+    print(mdata.obs)
+    
+    return mdata_copy
+
+
+def concatenate_modalities(raw_mdatas, modality_keys):
+    concatenated_anndata_dict = {}
+
+    # Iterate over each modality key
+    for key in modality_keys:
+        # Extract all Anndata objects for this modality across all muon objects
+        anndata_list = [mdata.mod[key] for mdata in raw_mdatas if key in mdata.mod]
+        
+        # Concatenate the Anndata objects for this modality
+        concatenated_anndata_dict[key] = anndata.concat(anndata_list, join='outer')
+
+    return concatenated_anndata_dict
+
+
+def concatenate_obs(raw_mdatas):
+    obs_list = [mdata.obs for mdata in raw_mdatas]
+    concatenated_obs = pd.concat(obs_list, axis=0)
+    return concatenated_obs
+
+
+def concat_mudatas(concatenated_anndata_dict, mudata_obs):
+    # Create a new mudata object from the concatenated anndata objects
+    new_mudata = mu.MuData(concatenated_anndata_dict)
+    new_mudata.obs = mudata_obs
+    return new_mudata
 
 
 def create_json(tissue, data_product_uuid, creation_time, uuids, hbmids, cell_count, file_size):
@@ -95,12 +143,6 @@ def create_json(tissue, data_product_uuid, creation_time, uuids, hbmids, cell_co
         json.dump(metadata, outfile)
 
 
-def make_mudata(raw_mdata, processed_mdata):
-    mdata = mu.MuData({"atac_raw_mdata": raw_mdata, "atac_processed_mdata": processed_mdata})
-    mu.pp.intersect_obs(mdata)
-    return mdata
-
-
 def annotate_mudata(mdata, uuids_df):
     merged = uuids_df.merge(mdata.obs, left_on="uuid", right_on="dataset", how="inner")
     merged = merged.set_index(mdata.obs.index)
@@ -110,19 +152,8 @@ def annotate_mudata(mdata, uuids_df):
     return merged
 
 
-def make_new_anndata_object(adata):
-    new_adata = anndata.AnnData(X=adata.X, obs=pd.DataFrame(index=adata.obs.index), var=adata.var)
-    return new_adata
-
-
-def load_mudata(mdata_file):
-    mdata = mu.read_h5mu(mdata_file)
-    print(mdata)
-    return mdata
-
-
 def main(data_directory: Path, uuids_file: Path, tissue: str = None):
-    output_file_name = f"{tissue}" if tissue else "atac"
+    output_file_name = f"{tissue}" if tissue else "multiome"
     uuids_df = pd.read_csv(uuids_file, sep="\t", dtype=str)
     uuids_list = uuids_df["uuid"].to_list()
     hbmids_list = uuids_df["hubmap_id"].to_list()
@@ -131,9 +162,10 @@ def main(data_directory: Path, uuids_file: Path, tissue: str = None):
     file_pairs = [find_file_pairs(directory) for directory in directories if len(listdir(directory))>1]
     print("Annotating objects")
     raw_mdatas = [
-        load_mudata(file_pair[0])
+        make_unique_barcodes(file_pair[0], tissue)
         for file_pair in file_pairs
     ]
+
 
     # processed_mdatas = [     
     #     load_mudata(file_pair[1])
@@ -141,16 +173,29 @@ def main(data_directory: Path, uuids_file: Path, tissue: str = None):
     # ]
 
     print("Concatenating objects")
-    raw_mdata_concat = md.concat(raw_mdatas)
+    modality_keys = ["rna", "atac_cell_by_bin", "atac_cell_by_gene"]
+    concatenated_anndata = concatenate_modalities(raw_mdatas, modality_keys)
+    concat_obs = concatenate_obs(raw_mdatas)
+    raw_mdata_concat = concat_mudatas(concatenated_anndata, concat_obs)
+    raw_mdata_concat.obs = annotate_mudata(raw_mdata_concat, uuids_df)
+    columns_to_keep = [
+        "hubmap_id", "age", "sex", "height", "weight", "bmi", "cause_of_death", "race", "barcode", "dataset", "cell_id"
+    ]
+    raw_mdata_concat.obs = raw_mdata_concat.obs[columns_to_keep]
+
 
     creation_time = str(datetime.now())
     data_product_uuid = str(uuid.uuid4())
-    total_cell_count = raw_mdatas.obs.shape[0]
-    raw_mdata_concat.obs = annotate_mudata(raw_mdata_concat, uuids_df)
+    total_cell_count = raw_mdata_concat.obs.shape[0]
     raw_mdata_concat.uns["creation_data_time"] = creation_time
     raw_mdata_concat.uns["datasets"] = hbmids_list
     raw_mdata_concat.uns["uuid"] = data_product_uuid
     raw_mdata_concat.write(f"{output_file_name}.h5mu")
+    print(raw_mdata_concat.obs)
+    print(raw_mdata_concat.obs_keys())
+    print(raw_mdata_concat.mod["atac_cell_by_bin"].obs)
+    print(raw_mdata_concat.mod["atac_cell_by_gene"].obs)
+    print(raw_mdata_concat.mod["rna"].obs)
     file_size = os.path.getsize(f"{output_file_name}.h5mu")
     create_json(tissue, data_product_uuid, creation_time, uuids_list, hbmids_list, total_cell_count, file_size)
 

@@ -36,9 +36,9 @@ COPY docker/requirements.txt /opt/requirements.txt
 RUN /opt/venv/bin/pip install -r /opt/requirements.txt \
  && rm -rf /root/.cache/pip
 
-COPY bin /opt/bin
+COPY bin /opt
 COPY data /opt/data
-RUN chmod -R +x /opt/bin
+RUN chmod -R +x /opt
 
 WORKDIR /opt
 
