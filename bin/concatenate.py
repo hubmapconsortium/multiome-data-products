@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Dict, Tuple
 
 import anndata
+import mudata as md
 import muon as mu
 import numpy as np
 import os
@@ -116,6 +117,7 @@ def make_new_anndata_object(adata):
 
 def load_mudata(mdata_file):
     mdata = mu.read_h5mu(mdata_file)
+    print(mdata)
     return mdata
 
 
@@ -139,7 +141,7 @@ def main(data_directory: Path, uuids_file: Path, tissue: str = None):
     # ]
 
     print("Concatenating objects")
-    raw_mdata_concat = mu.concat(raw_mdatas)
+    raw_mdata_concat = md.concat(raw_mdatas)
 
     creation_time = str(datetime.now())
     data_product_uuid = str(uuid.uuid4())

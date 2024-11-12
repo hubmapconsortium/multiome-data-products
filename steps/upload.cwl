@@ -4,7 +4,7 @@ label: Annotates each h5ad file with dataset and tissue type, then concatenates
 
 hints:
   DockerRequirement:
-    dockerPull: hubmap/atac-data-products
+    dockerPull: hubmap/multi-data-products
 baseCommand: /opt/upload.py
 
 inputs:

@@ -1,1 +1,1 @@
-hubmap/atac-data-products docker/Dockerfile base_directory_build
+hubmap/multi-data-products docker/Dockerfile base_directory_build
