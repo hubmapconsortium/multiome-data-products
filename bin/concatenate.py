@@ -65,6 +65,7 @@ def make_unique_barcodes(mdata_file, tissue_type: str = None):
     mdata_copy.obs["barcode"] = mdata.obs.index
     mdata_copy.obs["barcode"] = mdata_copy.obs["barcode"].str.replace("BAM_data#", "", regex=False)
     mdata_copy.obs["dataset"] = data_set_dir
+    mdata_copy.obs["tissue"] = tissue_type
     
     cell_ids_list = [
         "-".join([data_set_dir, barcode]) for barcode in mdata_copy.obs["barcode"]
@@ -72,7 +73,7 @@ def make_unique_barcodes(mdata_file, tissue_type: str = None):
     mdata_copy.obs["cell_id"] = pd.Series(
         cell_ids_list, index=mdata_copy.obs.index, dtype=str
     )
-
+    
     # Iterate through each modality in mdata, accessing by key
     print(list(mdata_copy.mod.keys()))
     for key in mdata_copy.mod.keys():
@@ -89,11 +90,12 @@ def make_unique_barcodes(mdata_file, tissue_type: str = None):
         ]
         mod_data.obs["cell_id"] = pd.Series(cell_ids_list, index=mod_data.obs.index, dtype=str)
         mod_data.obs.set_index("cell_id", drop=True, inplace=True)
+        mod_data.obs["tissue"] = tissue_type
 
         print(mod_data.obs)
         mdata_copy.mod[key] = mod_data
-    
-    print(mdata.obs)
+
+    mdata_copy.obs["tissue"] = tissue_type
     
     return mdata_copy
 
@@ -153,7 +155,7 @@ def annotate_mudata(mdata, uuids_df):
 
 
 def main(data_directory: Path, uuids_file: Path, tissue: str = None):
-    output_file_name = f"{tissue}" if tissue else "multiome"
+    output_file_name = f"{tissue}_raw" if tissue else "multiome"
     uuids_df = pd.read_csv(uuids_file, sep="\t", dtype=str)
     uuids_list = uuids_df["uuid"].to_list()
     hbmids_list = uuids_df["hubmap_id"].to_list()
@@ -179,7 +181,7 @@ def main(data_directory: Path, uuids_file: Path, tissue: str = None):
     raw_mdata_concat = concat_mudatas(concatenated_anndata, concat_obs)
     raw_mdata_concat.obs = annotate_mudata(raw_mdata_concat, uuids_df)
     columns_to_keep = [
-        "hubmap_id", "age", "sex", "height", "weight", "bmi", "cause_of_death", "race", "barcode", "dataset", "cell_id"
+        "hubmap_id", "age", "sex", "height", "weight", "bmi", "cause_of_death", "race", "barcode", "dataset", "cell_id", "tissue"
     ]
     raw_mdata_concat.obs = raw_mdata_concat.obs[columns_to_keep]
 
