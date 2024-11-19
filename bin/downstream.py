@@ -6,6 +6,7 @@ import json
 import matplotlib.pyplot as plt
 import muon as mu
 import numpy as np
+import os
 import scanpy as sc
 from muon import prot as pt
 
@@ -38,6 +39,8 @@ def main(mudata_raw: Path, tissue: str, metadata: Path):
     mdata_raw = mu.MuData({"rna": rna_expr, "atac_cbg": atac_cbg_expr})
     print(mdata_raw)
     original_obs = expr.obs.copy()
+    uuid = expr.uns["uuid"]
+    original_uns = expr.uns.copy()
 
     mdata_rna = mdata_raw.mod["rna"]
     mdata_ataccbg = mdata_raw.mod["atac_cbg"]
@@ -71,7 +74,7 @@ def main(mudata_raw: Path, tissue: str, metadata: Path):
     sc.tl.umap(mdata_ataccbg)
     with new_plot():
         sc.pl.umap(mdata_ataccbg, color="leiden", legend_loc="on data")
-        plt.savefig("leiden_cluster_atac.pdf")
+        plt.savefig(f"{uuid}_leiden_cluster_atac.pdf")
 
     ## Downstream analysis for RNA
     print("Performing downstream analysis for RNA...")
@@ -105,7 +108,7 @@ def main(mudata_raw: Path, tissue: str, metadata: Path):
     sc.tl.umap(mdata_rna)
     with new_plot():
         sc.pl.umap(mdata_rna, color="leiden", legend_loc="on data")
-        plt.savefig("leiden_cluster_rna.pdf")
+        plt.savefig(f"{uuid}_leiden_cluster_rna.pdf")
 
     ## Multi-omics integration
     mdata_raw.update()
@@ -132,7 +135,7 @@ def main(mudata_raw: Path, tissue: str, metadata: Path):
 
     with new_plot():
         sc.pl.umap(mdata_raw, color="leiden_wnn", legend_loc="on data")
-        plt.savefig("leiden_cluster_combined.pdf")
+        plt.savefig(f"{uuid}_leiden_cluster_combined.pdf")
 
     # Add the cell-by-bin data back for output
     mdata_raw.mod["atac_cbb"] = atac_cbb_expr
@@ -143,12 +146,18 @@ def main(mudata_raw: Path, tissue: str, metadata: Path):
     columns_to_keep = ['hubmap_id', 'age', 'sex', 'height', 'weight', 'bmi', 'cause_of_death', 'race', 'barcode', 'dataset', 'cell_id', 'num_genes_rna', 'leiden_wnn', "tissue"]
     mdata_raw_copy.obs = mdata_raw_copy.obs[columns_to_keep]
     mdata_raw_copy.obs["cell_id"] = mdata_raw_copy.obs["cell_id"].astype(str)
-    mdata_raw_copy.obs["highly_variable"] = mdata_raw_copy.obs["highly_variable"].astype(bool)
+    mdata_raw_copy.var["highly_variable"] = mdata_raw_copy.var["highly_variable"].astype(bool)
     print(mdata_raw_copy)
     print(mdata_raw_copy.obs_keys())
     print(mdata_raw.var["highly_variable"])
+    for key in original_uns:
+        mdata_raw_copy.uns[key] = original_uns[key]
 
     mdata_raw_copy.write(f"{tissue}_processed.h5mu")
+
+    processed_cell_count = mdata_raw_copy.obs.shape[0]
+    processed_file_size = os.path.getsize(f"{tissue}_processed.h5mu")
+    updata_metadata(metadata, processed_cell_count, processed_file_size)
 
 
 if __name__ == "__main__":

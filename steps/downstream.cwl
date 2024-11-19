@@ -35,13 +35,17 @@ outputs:
   joint_embedding:
     type: File
     outputBinding:
-      glob: "leiden_cluster_combined.pdf"
+      glob: "*leiden_cluster_combined.pdf"
   rna_embedding:
     type: File
     outputBinding:
-      glob: "leiden_cluster_rna.pdf"
+      glob: "*leiden_cluster_rna.pdf"
   atac_embedding:
     type: File
     outputBinding:
-      glob: "leiden_cluster_atac.pdf"
+      glob: "*leiden_cluster_atac.pdf"
+  final_metadata_json:
+    type: File
+    outputBinding:
+      glob: "*.json"
   

@@ -33,9 +33,9 @@ outputs:
         type: File
         outputSource: concatenate/mudata_raw
     
-    metadata_json:
+    final_metadata_json:
         type: File
-        outputSource: concatenate/metadata_json
+        outputSource: downstream/metadata_json
 
 steps:
 
@@ -58,6 +58,8 @@ steps:
       in:
         - id: mudata_raw
           source: concatenate/mudata_raw
+        - id: metadata_json
+          source: concatenate/metadata_json
       
       out:
         - muon_processed
@@ -65,22 +67,27 @@ steps:
         - joint_embedding
         - rna_embedding
         - atac_embedding
+        - final_metadata_json
       run: steps/downstream.cwl
 
 
-#    - id: upload
-#      in: 
-#        - id: mudata_file
-#          source: concatenate/mudata_file
-#        - id: metadata_json
-#          source: concatenate/metadata_json
-#        - id: access_key_id
-#          source: access_key_id
-#        - id: secret_access_key
-#          source: secret_access_key
-#    
-#      out:
-#        - finished_text
-#      run: steps/upload.cwl
-#      label: "Uploads the pipeline outputs to s3"
+    - id: upload
+      in: 
+        - id: mudata_raw
+          source: concatenate/mudata_raw
+        - id: muon_processed
+          source: downstream/muon_processed
+        - id: final_metadata_json
+          source: concatenate/final_metadata_json
+        - id: joint_embedding
+          source: downstream/joint_embedding
+        - id: access_key_id
+          source: access_key_id
+        - id: secret_access_key
+          source: secret_access_key
+    
+      out:
+        - finished_text
+      run: steps/upload.cwl
+      label: "Uploads the pipeline outputs to s3"
       
