@@ -58,9 +58,9 @@ steps:
       in:
         - id: mudata_raw
           source: concatenate/mudata_raw
-        - id: tissue:
+        - id: tissue
           source: tissue
-          
+
         - id: metadata_json
           source: concatenate/metadata_json
       
