@@ -33,6 +33,14 @@ outputs:
         type: File
         outputSource: concatenate/mudata_raw
     
+    muon_processed: 
+        type: File
+        outputSource: downstream/muon_processed
+    
+    joint_embedding:
+        type: File
+        outputSource: downstream/joint_embedding
+    
     final_metadata_json:
         type: File
         outputSource: downstream/final_metadata_json
