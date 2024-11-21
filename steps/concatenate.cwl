@@ -27,7 +27,7 @@ inputs:
             position: 2
 
 outputs:
-    mudata_file:
+    mudata_raw:
         type: File
         outputBinding:
             glob: "*.h5mu"
