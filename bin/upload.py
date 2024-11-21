@@ -42,7 +42,7 @@ def main(mudata_raw, muon_processed, data_product_metadata, umap, access_key_id,
 if __name__ == "__main__":
     p = ArgumentParser()
     p.add_argument("mudata_raw", type=Path)
-    p.add_argument("muon_procesed", type=Path)
+    p.add_argument("muon_processed", type=Path)
     p.add_argument("final_metadata_json", type=Path)
     p.add_argument("joint_embedding", type=Path)
     p.add_argument("access_key_id", type=str)
