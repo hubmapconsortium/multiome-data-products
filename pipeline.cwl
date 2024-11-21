@@ -78,7 +78,7 @@ steps:
         - id: muon_processed
           source: downstream/muon_processed
         - id: final_metadata_json
-          source: concatenate/final_metadata_json
+          source: downstream/final_metadata_json
         - id: joint_embedding
           source: downstream/joint_embedding
         - id: access_key_id
