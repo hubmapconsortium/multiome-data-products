@@ -35,7 +35,7 @@ outputs:
     
     final_metadata_json:
         type: File
-        outputSource: downstream/metadata_json
+        outputSource: downstream/final_metadata_json
 
 steps:
 
