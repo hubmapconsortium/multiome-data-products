@@ -29,10 +29,10 @@ def get_uuid(metadata_json):
     return uuid
 
 
-def main(mudata_file, data_product_metadata, access_key_id, secret_access_key):
+def main(mudata_raw, muon_processed, data_product_metadata, umap, access_key_id, secret_access_key):
     set_access_keys(access_key_id, secret_access_key)
     uuid = get_uuid(data_product_metadata)
-    files = [mudata_file, data_product_metadata]
+    files = [mudata_raw, muon_processed, data_product_metadata, umap]
     upload_files_to_s3(files, uuid)
     f = open("finished.txt", "w")
     f.write("cwl wants an output file for this step")
@@ -41,10 +41,12 @@ def main(mudata_file, data_product_metadata, access_key_id, secret_access_key):
 
 if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument("mudata_file", type=Path)
-    p.add_argument("metadata_json", type=Path)
+    p.add_argument("mudata_raw", type=Path)
+    p.add_argument("muon_procesed", type=Path)
+    p.add_argument("final_metadata_json", type=Path)
+    p.add_argument("joint_embedding", type=Path)
     p.add_argument("access_key_id", type=str)
     p.add_argument("secret_access_key", type=str)
     args= p.parse_args()
 
-    main(args.mudata_file, args.metadata_json, args.access_key_id, args.secret_access_key)
+    main(args.mudata_raw, args.muon_processed, args.final_metadata_json, args.joint_embedding, args.access_key_id, args.secret_access_key)

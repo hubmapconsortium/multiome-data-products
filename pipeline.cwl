@@ -29,13 +29,13 @@ inputs:
         type: string
 
 outputs:
-    mudata_file:
+    mudata_raw:
         type: File
-        outputSource: concatenate/mudata_file
+        outputSource: concatenate/mudata_raw
     
-    metadata_json:
+    final_metadata_json:
         type: File
-        outputSource: concatenate/metadata_json
+        outputSource: downstream/metadata_json
 
 steps:
 
@@ -49,17 +49,38 @@ steps:
           source: tissue
     
       out:
-        - mudata_file
+        - mudata_raw
         - metadata_json
       run: steps/concatenate.cwl
       label: "Concatenates h5ad files in directory"
 
-    - id: upload
-      in: 
-        - id: mudata_file
-          source: concatenate/mudata_file
+    - id: downstream
+      in:
+        - id: mudata_raw
+          source: concatenate/mudata_raw
         - id: metadata_json
           source: concatenate/metadata_json
+      
+      out:
+        - muon_processed
+        - mofa_out
+        - joint_embedding
+        - rna_embedding
+        - atac_embedding
+        - final_metadata_json
+      run: steps/downstream.cwl
+
+
+    - id: upload
+      in: 
+        - id: mudata_raw
+          source: concatenate/mudata_raw
+        - id: muon_processed
+          source: downstream/muon_processed
+        - id: final_metadata_json
+          source: concatenate/final_metadata_json
+        - id: joint_embedding
+          source: downstream/joint_embedding
         - id: access_key_id
           source: access_key_id
         - id: secret_access_key
