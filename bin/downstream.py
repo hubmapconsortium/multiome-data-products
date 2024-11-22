@@ -74,7 +74,7 @@ def main(mudata_raw: Path, tissue: str, metadata: Path):
     sc.tl.umap(mdata_ataccbg)
     with new_plot():
         sc.pl.umap(mdata_ataccbg, color="leiden", legend_loc="on data")
-        plt.savefig(f"{uuid}_leiden_cluster_atac.pdf")
+        plt.savefig(f"{uuid}_leiden_cluster_atac.png")
 
     ## Downstream analysis for RNA
     print("Performing downstream analysis for RNA...")
@@ -108,7 +108,7 @@ def main(mudata_raw: Path, tissue: str, metadata: Path):
     sc.tl.umap(mdata_rna)
     with new_plot():
         sc.pl.umap(mdata_rna, color="leiden", legend_loc="on data")
-        plt.savefig(f"{uuid}_leiden_cluster_rna.pdf")
+        plt.savefig(f"{uuid}_leiden_cluster_rna.png")
 
     ## Multi-omics integration
     mdata_raw.update()
@@ -135,7 +135,7 @@ def main(mudata_raw: Path, tissue: str, metadata: Path):
 
     with new_plot():
         sc.pl.umap(mdata_raw, color="leiden_wnn", legend_loc="on data")
-        plt.savefig(f"{uuid}_leiden_cluster_combined.pdf")
+        plt.savefig(f"{uuid}_leiden_cluster_combined.png")
 
     # Add the cell-by-bin data back for output
     mdata_raw.mod["atac_cbb"] = atac_cbb_expr

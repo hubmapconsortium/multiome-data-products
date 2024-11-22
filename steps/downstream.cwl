@@ -12,6 +12,7 @@ inputs:
     inputBinding:
       position: 0
       prefix: "--mudata_raw"
+
   tissue:
     type: string
     inputBinding:
@@ -35,15 +36,15 @@ outputs:
   joint_embedding:
     type: File
     outputBinding:
-      glob: "*leiden_cluster_combined.pdf"
+      glob: "*leiden_cluster_combined.png"
   rna_embedding:
     type: File
     outputBinding:
-      glob: "*leiden_cluster_rna.pdf"
+      glob: "*leiden_cluster_rna.png"
   atac_embedding:
     type: File
     outputBinding:
-      glob: "*leiden_cluster_atac.pdf"
+      glob: "*leiden_cluster_atac.png"
   final_metadata_json:
     type: File
     outputBinding:
