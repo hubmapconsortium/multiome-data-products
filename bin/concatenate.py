@@ -137,7 +137,7 @@ def create_json(tissue, data_product_uuid, creation_time, uuids, hbmids, cell_co
         "Creation Time": creation_time,
         "Dataset UUIDs": uuids,
         "Dataset HBMIDs": hbmids,
-        "Total Cell Count": cell_count,
+        "Raw Total Cell Count": cell_count,
         "Raw File Size": file_size
     }
     print("Writing metadata json")

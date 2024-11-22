@@ -16,7 +16,7 @@ from plot_utils import new_plot
 def updata_metadata(metadata_json, cell_count, file_size):
     with open(metadata_json, 'r') as json_file:
         metadata = json.load(json_file)
-    metadata["Processed Cell Count"] = cell_count
+    metadata["Processed Total Cell Count"] = cell_count
     metadata["Processed File Size"] = file_size
     uuid = metadata["Data Product UUID"]
     with open(f"{uuid}.json", "w") as outfile:
