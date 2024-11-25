@@ -31,7 +31,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     && rm -rf aws awscliv2.zip
 
 RUN python3 -m venv /opt/venv \
- && /opt/venv/bin/pip install --upgrade pip
+ && /opt/venv/bin/pip install --upgrade pip setuptools wheel
 COPY docker/requirements.txt /opt/requirements.txt
 RUN /opt/venv/bin/pip install -r /opt/requirements.txt \
  && rm -rf /root/.cache/pip
