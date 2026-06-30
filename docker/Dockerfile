@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM continuumio/miniconda3:25.3.1-1
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -10,7 +10,6 @@ RUN apt-get update \
     flex \
     git \
     libfreetype6-dev \
-    libigraph-dev \
     libxml2-dev \
     libtool \
     m4 \
@@ -18,27 +17,24 @@ RUN apt-get update \
     python3 \
     python3-dev \
     python3-pip \
-    python3-venv \
     zlib1g-dev \
     curl \
-    unzip \
  && rm -rf /var/cache/apt/*
 
-# Install AWS CLI using the official AWS method (via curl and unzip)
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-    && unzip awscliv2.zip \
-    && ./aws/install \
-    && rm -rf aws awscliv2.zip
+## Python packages
+COPY docker/environment.yml /opt/environment.yml
+RUN conda env create -f /opt/environment.yml
 
-RUN python3 -m venv /opt/venv \
- && /opt/venv/bin/pip install --upgrade pip
-COPY docker/requirements.txt /opt/requirements.txt
-RUN /opt/venv/bin/pip install -r /opt/requirements.txt \
- && rm -rf /root/.cache/pip
+ENV CONDA_ENV_NAME=multi-maps
+ENV CONDA_PREFIX=/opt/conda/envs/${CONDA_ENV_NAME}
+ENV PATH=${CONDA_PREFIX}/bin:$PATH
 
-COPY bin /opt
+RUN pip3 install git+https://github.com/satijalab/panhumanpy.git@d4c69410e7dc23213b7a848c8c1d8274e333272a
+RUN curl -L -o /opt/pan-human-azimuth-crosswalk.csv https://cdn.humanatlas.io/digital-objects/ctann/pan-human-azimuth/v1.0/assets/pan-human-azimuth-crosswalk.csv
+
+COPY bin/ /opt
 COPY data /opt/data
 
 WORKDIR /opt
 
-ENV PATH="/opt/venv/bin:$PATH"
+CMD ["/bin/bash"]
