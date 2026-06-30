@@ -38,7 +38,6 @@ RUN /opt/venv/bin/pip install -r /opt/requirements.txt \
 
 COPY bin /opt
 COPY data /opt/data
-RUN chmod -R +x /opt
 
 WORKDIR /opt
 
