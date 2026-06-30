@@ -130,7 +130,7 @@ def concat_mudatas(concatenated_anndata_dict, mudata_obs):
 def create_json(tissue, data_product_uuid, creation_time, uuids, hbmids, cell_count, file_size):
     bucket_url = f"https://hubmap-data-products.s3.amazonaws.com/{data_product_uuid}/"
     metadata = {
-        "Data Product UUID": data_product_uuid,
+        "Integrated Map UUID": data_product_uuid,
         "Tissue": convert_tissue_code(tissue),
         "Assay": "10X Multiome",
         "URL": bucket_url + f"{tissue}.h5mu",

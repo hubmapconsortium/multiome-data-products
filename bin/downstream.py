@@ -18,7 +18,7 @@ def updata_metadata(metadata_json, cell_count, file_size):
         metadata = json.load(json_file)
     metadata["Processed Total Cell Count"] = cell_count
     metadata["Processed File Size"] = file_size
-    uuid = metadata["Data Product UUID"]
+    uuid = metadata["Integrated Map UUID"]
     with open(f"{uuid}.json", "w") as outfile:
         json.dump(metadata, outfile)
 
