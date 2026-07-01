@@ -116,9 +116,6 @@ def main(mudata_raw: Path, tissue: str, metadata: Path):
     
     # # Merge the original .obs back with the modified .obs
     # # original_obs_filtered = original_obs.loc[mdata_raw.obs.index]
-
-    print(mdata_raw.obs_keys())
-    print(mdata_raw)
     mdata_raw.write("multiome_normalized.h5mu")
     
     ## Multi-omics factor analysis
@@ -127,8 +124,6 @@ def main(mudata_raw: Path, tissue: str, metadata: Path):
     # Multiplex clustering
     sc.pp.neighbors(mdata_raw["rna"])
     sc.pp.neighbors(mdata_raw["atac_cbg"])
-    print(mdata_raw)
-    print(mdata_raw.obs_keys())
     sc.pp.neighbors(mdata_raw, use_rep="X_mofa", key_added="mofa")
     sc.tl.umap(mdata_raw, neighbors_key="mofa")
     sc.tl.leiden(mdata_raw, resolution=1.0, neighbors_key="mofa", key_added="leiden_wnn")
@@ -140,13 +135,13 @@ def main(mudata_raw: Path, tissue: str, metadata: Path):
     # Add the cell-by-bin data back for output
     mdata_raw.mod["atac_cbb"] = atac_cbb_expr
     mdata_raw_copy = mdata_raw.copy()
-    print(mdata_raw_copy.obs_keys())
     for column in original_obs.columns:
         mdata_raw_copy.obs[column] = original_obs[column]
     columns_to_keep = ['hubmap_id', 'age', 'sex', 'height', 'weight', 'bmi', 'cause_of_death', 'race', 'barcode', 'dataset', 'cell_id', 'num_genes_rna', 'leiden_wnn', "tissue"]
     mdata_raw_copy.obs = mdata_raw_copy.obs[columns_to_keep]
     mdata_raw_copy.obs["cell_id"] = mdata_raw_copy.obs["cell_id"].astype(str)
     mdata_raw_copy.var["highly_variable"] = mdata_raw_copy.var["highly_variable"].fillna(False)
+    print(mdata_raw_copy.var["highly_variable"])
     mdata_raw_copy.var["highly_variable"] = mdata_raw_copy.var["highly_variable"].astype(bool)
     print(mdata_raw_copy)
     print(mdata_raw_copy.obs_keys())
