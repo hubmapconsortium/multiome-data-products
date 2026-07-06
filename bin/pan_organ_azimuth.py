@@ -25,6 +25,17 @@ def add_cell_counts(data_product_metadata, cell_counts):
     return metadata
 
 
+def map_to_clid(adata_obs: pd.DataFrame):
+    reference = pd.read_csv(CLID_MAPPING, header=10)
+    label_to_cl_label = dict(zip(reference['Annotation_Label'], reference['CL_Label']))
+    label_to_cl_id = dict(zip(reference['Annotation_Label'], reference['CL_ID']))
+
+    adata_obs['CL_Label'] = adata_obs['final_level_labels'].map(label_to_cl_label)
+    adata_obs['CL_ID'] = adata_obs['final_level_labels'].map(label_to_cl_id)
+
+    return adata_obs
+
+
 def main(
         secondary_analysis_matrix: Path,
         tissue: str,
@@ -76,8 +87,9 @@ def main(
     secondary_analysis_adata.uns["annotation_metadata"]["is_annotated"] = True
     secondary_analysis_adata.uns["annotation_metadata"]["model_version"] = model_version
     secondary_analysis_adata.uns["annotation_metadata"]["panhumanpy_version"] = panhumanpy.__version__
+    secondary_analysis_adata.obs = map_to_clid(secondary_analysis_adata.obs)
     cell_type_counts = secondary_analysis_adata.obs["CL_Label"].value_counts().to_dict()
-    adata.uns["cell_type_counts"] = json.dumps(cell_type_counts)
+    secondary_analysis_adata.uns["cell_type_counts"] = json.dumps(cell_type_counts)
     metadata = add_cell_counts(data_product_metadata, cell_type_counts)
     uuid = metadata["Integrated Map UUID"]
     with open(f"{uuid}.json", 'w') as f:
