@@ -82,23 +82,16 @@ steps:
       run: steps/downstream.cwl
 
 
-    - id: upload
-      in: 
-        - id: mudata_raw
-          source: concatenate/mudata_raw
+    - id: pan_organ_azimuth
+      in:
         - id: muon_processed
           source: downstream/muon_processed
-        - id: final_metadata_json
-          source: downstream/final_metadata_json
-        - id: joint_embedding
-          source: downstream/joint_embedding
-        - id: access_key_id
-          source: access_key_id
-        - id: secret_access_key
-          source: secret_access_key
-    
+        - id: tissue:
+          source: tissue
       out:
-        - finished_text
-      run: steps/upload.cwl
-      label: "Uploads the pipeline outputs to s3"
+        - annotated_mudata
+        - calculated_metadata_file
+        - cell_type_manifest
+      run: steps/azimuth-annotate.cwl
+      label: "Adds azimuth annotations"
       

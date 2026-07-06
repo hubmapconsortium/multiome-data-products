@@ -6,7 +6,7 @@ requirements:
     dockerPull: hubmap/multi-maps:latest
 
 inputs:
-  partially_processed_h5ad_file:
+  muon_processed:
     type: File
     inputBinding:
       position: 0
@@ -14,7 +14,7 @@ inputs:
     type: string?
 
 outputs:
-  annotated_h5ad_file:
+  annotated_mudata:
     type: File
     outputBinding:
       glob: '*_processed.h5ad'
