@@ -147,8 +147,6 @@ def main(
         secondary_analysis_adata.write(f"{tissue}_processed.h5ad")
 
     calculated_metadata_dict = {"annotation_tools": ["Pan-human Azimuth"], "object_types": ["CL:0000000"]}
-    with open('calculated_metadata.json', 'w') as f:
-        json.dump(calculated_metadata_dict, f)
 
     cell_type_manifest_dict = {}
 
@@ -161,8 +159,6 @@ def main(
         sub_dict = {k: v for k, v in sub_dict.items() if not pd.isna(k)}
         cell_type_manifest_dict[column_header] = sub_dict
 
-    with open('cell_type_manifest.json', 'w') as f:
-        json.dump(cell_type_manifest_dict, f)
 
 
 if __name__ == '__main__':
