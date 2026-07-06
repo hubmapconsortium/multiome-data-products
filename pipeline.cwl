@@ -77,7 +77,7 @@ steps:
       in:
         - id: muon_processed
           source: downstream/muon_processed
-        - id: tissue:
+        - id: tissue
           source: tissue
         - id: metadata_json
           source: downstream/final_metadata_json
