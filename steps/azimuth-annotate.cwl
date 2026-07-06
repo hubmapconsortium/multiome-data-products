@@ -23,7 +23,7 @@ outputs:
   annotated_mudata:
     type: File
     outputBinding:
-      glob: '*_processed.h5ad'
+      glob: '*_processed.h5mu'
   metadata_with_cell_types:
     type: File
     outputBinding:

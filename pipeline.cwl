@@ -73,7 +73,7 @@ steps:
       run: steps/downstream.cwl
 
 
-    - id: pan_organ_azimuth
+    - id: azimuth-annotate
       in:
         - id: muon_processed
           source: downstream/muon_processed
