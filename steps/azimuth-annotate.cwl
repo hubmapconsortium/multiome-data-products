@@ -11,7 +11,9 @@ inputs:
     inputBinding:
       position: 0
   tissue:
-    type: string?
+    type: string
+    inputBinding:
+      position: 1
 
 outputs:
   annotated_mudata:
