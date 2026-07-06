@@ -3,7 +3,7 @@ cwlVersion: v1.1
 class: CommandLineTool
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/multi-maps:latest
+    dockerPull: hubmap/multi-data-products:latest
 
 inputs:
   muon_processed:
