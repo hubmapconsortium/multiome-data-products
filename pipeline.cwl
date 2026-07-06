@@ -27,7 +27,7 @@ outputs:
     
     muon_processed: 
         type: File
-        outputSource: downstream/muon_processed
+        outputSource: azimuth-annotate/annotated_mudata
     
     joint_embedding:
         type: File
@@ -35,7 +35,7 @@ outputs:
     
     final_metadata:
         type: File
-        outputSource: downstream/metadata_with_cell_types
+        outputSource: azimuth-annotate/metadata_with_cell_types
 
 steps:
 
