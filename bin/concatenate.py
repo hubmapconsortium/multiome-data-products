@@ -187,8 +187,7 @@ def map_gene_ids(var):
 
 
 def main(data_directory: Path, uuids_file: Path, tissue: str = None):
-    output_file_name = f\
-            "{tissue}_raw" if tissue else "multiome"
+    output_file_name = f"{tissue}_raw" if tissue else "multiome"
     uuids_df = pd.read_csv(uuids_file, sep="\t", dtype=str)
     uuids_list = uuids_df["uuid"].to_list()
     hbmids_list = uuids_df["hubmap_id"].to_list()
