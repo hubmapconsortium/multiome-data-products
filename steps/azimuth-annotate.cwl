@@ -14,19 +14,19 @@ inputs:
     type: string
     inputBinding:
       position: 1
+  metadata_json:
+    type: File
+    inputBinding:
+      position: 2
 
 outputs:
   annotated_mudata:
     type: File
     outputBinding:
       glob: '*_processed.h5ad'
-  calculated_metadata_file:
-    type: File?
+  metadata_with_cell_types:
+    type: File
     outputBinding:
-      glob: calculated_metadata.json
-  cell_type_manifest:
-    type: File?
-    outputBinding:
-      glob: cell_type_manifest.json
+      glob: "*.json"
 
 baseCommand: ['python3', '/opt/pan_organ_azimuth.py']

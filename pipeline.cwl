@@ -33,9 +33,9 @@ outputs:
         type: File
         outputSource: downstream/joint_embedding
     
-    final_metadata_json:
+    final_metadata:
         type: File
-        outputSource: downstream/final_metadata_json
+        outputSource: downstream/metadata_with_cell_types
 
 steps:
 
@@ -60,7 +60,6 @@ steps:
           source: concatenate/mudata_raw
         - id: tissue
           source: tissue
-
         - id: metadata_json
           source: concatenate/metadata_json
       
@@ -80,10 +79,11 @@ steps:
           source: downstream/muon_processed
         - id: tissue:
           source: tissue
+        - id: metadata_json
+          source: downstream/final_metadata_json
       out:
         - annotated_mudata
-        - calculated_metadata_file
-        - cell_type_manifest
+        - metadata_with_cell_types
       run: steps/azimuth-annotate.cwl
       label: "Adds azimuth annotations"
       

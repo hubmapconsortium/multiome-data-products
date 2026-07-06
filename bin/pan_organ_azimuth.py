@@ -18,20 +18,17 @@ CLID_MAPPING = "/opt/pan-human-azimuth-crosswalk.csv"
 model_version = "v1"
 
 
-def map_to_clid(adata_obs: pd.DataFrame):
-    reference = pd.read_csv(CLID_MAPPING, header=10)
-    label_to_cl_label = dict(zip(reference['Annotation_Label'], reference['CL_Label']))
-    label_to_cl_id = dict(zip(reference['Annotation_Label'], reference['CL_ID']))
-
-    adata_obs['CL_Label'] = adata_obs['final_level_labels'].map(label_to_cl_label)
-    adata_obs['CL_ID'] = adata_obs['final_level_labels'].map(label_to_cl_id)
-
-    return adata_obs
+def add_cell_counts(data_product_metadata, cell_counts):
+    with open(data_product_metadata, "r") as json_file:
+        metadata = json.load(json_file)
+    metadata["Processed Cell Type Counts"] = cell_counts
+    return metadata
 
 
 def main(
         secondary_analysis_matrix: Path,
         tissue: str,
+        data_product_metadata: Path,
 ):
     if secondary_analysis_matrix.suffix == ".h5mu":
         mudata = mu.read_h5mu(secondary_analysis_matrix)
@@ -54,7 +51,6 @@ def main(
     for key in adata.uns.keys():
         secondary_analysis_adata.uns[key] = adata.uns[key]
 
-    secondary_analysis_adata.obs = map_to_clid(secondary_analysis_adata.obs)
     secondary_analysis_adata.uns["pan_human_azimuth_crosswalk"] = {
         "title": "Cell type annotations for pan-human Azimuth, v1.0",
         "description": (
@@ -80,6 +76,12 @@ def main(
     secondary_analysis_adata.uns["annotation_metadata"]["is_annotated"] = True
     secondary_analysis_adata.uns["annotation_metadata"]["model_version"] = model_version
     secondary_analysis_adata.uns["annotation_metadata"]["panhumanpy_version"] = panhumanpy.__version__
+    cell_type_counts = secondary_analysis_adata.obs["CL_Label"].value_counts().to_dict()
+    adata.uns["cell_type_counts"] = json.dumps(cell_type_counts)
+    metadata = add_cell_counts(data_product_metadata, cell_type_counts)
+    uuid = metadata["Integrated Map UUID"]
+    with open(f"{uuid}.json", 'w') as f:
+        json.dump(metadata, f)
 
     for key in adata.obsm:
         secondary_analysis_adata.obsm[key] = adata.obsm[key]
@@ -155,9 +157,11 @@ if __name__ == '__main__':
     p = ArgumentParser()
     p.add_argument('secondary_analysis_matrix', type=Path)
     p.add_argument('tissue', type=str)
+    p.add_argument('data_product_metadata', type=Path)
     args = p.parse_args()
 
     main(
         args.secondary_analysis_matrix,
         args.tissue,
+        args.data_product_metadata,
     )
