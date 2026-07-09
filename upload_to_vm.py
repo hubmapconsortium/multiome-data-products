@@ -21,7 +21,7 @@ def upload_to_vm(umap_png, metadata_json, uuid):
     )
 
 
-def main(umap_png, metadata_json, shiny_cell_dir):
+def main(umap_png, metadata_json):
     uuid = get_uuid(metadata_json)
     upload_to_vm(umap_png, metadata_json, uuid)
 
